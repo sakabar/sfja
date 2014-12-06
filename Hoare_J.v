@@ -169,6 +169,7 @@ Require Export ImpList_J.
     ある特定の時点で成立している性質 -- つまり、与えられたメモリ状態で真になり得るか、
     なり得ないかの性質 -- についての表明(_assertions_)を作る方法です。*)
 
+(* 型の別名を付けただけ *)
 Definition Assertion := state -> Prop.
 
 (* **** Exercise: 1 star (assertions) *)
@@ -197,6 +198,34 @@ Definition Assertion := state -> Prop.
       fun st =>  False
 ]]
 [] *)
+
+(*
+      【註】後で、「この書き方は冗長」という話につなげるために、あえて冗長な日本語で書きます。
+
+      fun st =>  asnat (st X) = 3
+        ある状態stにおいて、変数Xの値を数値として解釈すると3である
+
+      fun st =>  asnat (st X) = x
+        ある状態stにおいて、変数Xの値を数値として解釈するとxである(?)
+
+      fun st =>  asnat (st X) <= asnat (st Y)
+        ある状態stにおいて、変数Xの値を数値として解釈した値は、変数Yの値を数値として解釈した値以下である
+
+      fun st =>  asnat (st X) = 3 \/ asnat (st X) <= asnat (st Y)
+        ある状態stにおいて、変数Xの値を数値として解釈すると3である、または、変数Xの値を数値として解釈した値は、変数Yの値を数値として解釈した値以下である
+
+      fun st =>  (asnat (st Z)) * (asnat (st Z)) <= x
+                 /\ ~ (((S (asnat (st Z))) * (S (asnat (st Z)))) <= x)
+        TODO
+
+      fun st =>  True
+        ある状態stにおいて、真である(?)
+
+      fun st =>  False
+        ある状態stにおいて、偽である(?)
+*)
+
+
 
 (* This way of writing assertions is formally correct -- it
     precisely captures what we mean, and it is exactly what we will
@@ -361,6 +390,33 @@ Open Scope hoare_spec_scope.
 ]]
  *)
 (** [] *)
+
+(*
+      【註】ホーアの三つ組の定義 “もしcが表明Pを満たす状態から開始され、また、cがいつかは停止するならば、最終状態では、表明Qが成立することを保証する。” に基づく
+
+      {{True}} c {{X = 5}}
+        もしcが表明Trueを満たす状態から開始され、またcがいつかは停止するならば、最終状態では、表明X=5が保証される
+
+      {{X = x}} c {{X = x + 5)}}
+        もしcが表明(X = x)を満たす状態から開始され、またcがいつかは停止するならば、最終状態では、表明(X = x + 5)が保証される
+
+      {{X <= Y}} c {{Y <= X}}
+        もしcが表明(X <= Y)を満たす状態から開始され、またcがいつかは停止するならば、最終状態では、表明(Y <= X)が保証される
+
+      {{True}} c {{False}}
+        もしcが表明Trueを満たす状態から開始され、またcがいつかは停止するならば、最終状態では、表明Falseが保証される(?)
+
+      {{X = x}}
+      c
+      {{Y = real_fact x}}.
+        もしcが表明(X = x)を満たす状態から開始され、またcがいつかは停止するならば、最終状態では、表明Yはxの階乗であるが保証される
+
+      {{True}}
+      c
+      {{(Z * Z) <= x /\ ~ (((S Z) * (S Z)) <= x)}}
+        もしcが表明Trueを満たす状態から開始され、またcがいつかは停止するならば、最終状態では、表明「Z * Zがxより小さく、かつ、(S Z) * (S Z)がx以下ではない」保証される
+
+*)
 
 (* **** Exercise: 1 star (valid_triples) *)
 (** **** 練習問題: ★ (valid_triples) *)
