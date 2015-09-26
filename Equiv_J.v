@@ -229,6 +229,17 @@ Theorem skip_right: forall c,
     (c; SKIP)
     c.
 Proof.
+  intros c st st'.
+  split.
+
+  intros H.
+  inversion H. subst.
+  inversion H5. subst.
+  assumption.
+
+  intros H.
+  apply E_Seq with st'.
+  assumption.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
@@ -533,6 +544,9 @@ Proof.
 Theorem seq_assoc : forall c1 c2 c3,
   cequiv ((c1;c2);c3) (c1;(c2;c3)).
 Proof.
+  intros.
+  split; intro H; inversion H; subst.
+  inversion H2; subst.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
@@ -1770,7 +1784,20 @@ Lemma aeval_weakening : forall i st a ni,
   var_not_used_in_aexp i a ->
   aeval (update st i ni) a = aeval st a.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros i st a ni NU.
+  induction NU; subst; try (simpl;
+                            rewrite -> IHNU1;
+                            rewrite -> IHNU2;
+                            reflexivity).
+  (* NUM*)
+  reflexivity.
+  
+  simpl. unfold update.
+  SearchAbout beq_nat.
+  apply not_eq_beq_id_false in H.
+  rewrite H.
+  reflexivity.
+Qed.
 
 (* Using [var_not_used_in_aexp], formalize and prove a correct verson
     of [subst_equiv_property]. *)
@@ -1785,8 +1812,14 @@ Proof.
 Theorem inequiv_exercise:
   ~ cequiv (WHILE BTrue DO SKIP END) SKIP.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intro eqv.
+  remember (eqv empty_state empty_state) as eqH. (* これが矛盾するに違いない、という方針 *)
+  destruct eqH as [LH RH].
+  apply (WHILE_true_nonterm BTrue SKIP empty_state empty_state).
+  intro st. reflexivity.
+    exact (RH (E_Skip empty_state)).
+Qed.
+
 
 (* ####################################################### *)
 (* * Doing Without Extensionality (Optional) *)
@@ -1836,7 +1869,10 @@ Notation "st1 '~' st2" := (stequiv st1 st2) (at level 30).
 Lemma stequiv_refl : forall (st : state),
   st ~ st.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold stequiv.
+  intros st X.
+  reflexivity.
+Qed.
 (** [] *)
 
 (* **** Exercise: 1 star, optional (stequiv_sym) *)
@@ -1845,8 +1881,15 @@ Lemma stequiv_sym : forall (st1 st2 : state),
   st1 ~ st2 ->
   st2 ~ st1.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold stequiv.
+  intros st1 st2 H0.
+  intros X.
+  rewrite H0.
+  reflexivity.
+Qed.
 (** [] *)
+  
+
 
 (* **** Exercise: 1 star, optional (stequiv_trans) *)
 (** **** 練習問題: ★, optional (stequiv_trans) *)
@@ -1855,7 +1898,13 @@ Lemma stequiv_trans : forall (st1 st2 st3 : state),
   st2 ~ st3 ->
   st1 ~ st3.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros st1 st2 st3.
+  unfold stequiv.
+  intros H12 H23 X.
+  rewrite H12.
+  rewrite H23.
+  reflexivity.
+Qed.
 (** [] *)
 
 (* Another useful fact... *)
@@ -1867,7 +1916,14 @@ Lemma stequiv_update : forall (st1 st2 : state),
   forall (X:id) (n:nat),
   update st1 X n ~ update st2 X n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold stequiv.
+  unfold update.
+  intros st1 st2 H12 X0 n X1.
+  destruct (beq_id X0 X1).
+  reflexivity.
+  rewrite H12.
+  reflexivity.
+Qed.
 (** [] *)
 
 (* It is then straightforward to show that [aeval] and [beval] behave
@@ -1881,7 +1937,28 @@ Lemma stequiv_aeval : forall (st1 st2 : state),
   st1 ~ st2 ->
   forall (a:aexp), aeval st1 a = aeval st2 a.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros st1 st2.
+  unfold stequiv.
+  intro H12.
+  induction a; try reflexivity.
+  unfold aeval.
+  apply H12.
+
+  simpl.
+  rewrite IHa1.
+  rewrite IHa2.
+  reflexivity.
+
+  simpl.
+  rewrite IHa1.
+  rewrite IHa2.
+  reflexivity.
+
+  simpl.
+  rewrite IHa1.
+  rewrite IHa2.
+  reflexivity.
+Qed.  
 (** [] *)
 
 (* **** Exercise: 2 stars, optional (stequiv_beval) *)
@@ -1890,6 +1967,10 @@ Lemma stequiv_beval : forall (st1 st2 : state),
   st1 ~ st2 ->
   forall (b:bexp), beval st1 b = beval st2 b.
 Proof.
+  unfold stequiv.
+  induction b; try reflexivity.
+  simpl.
+  
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
@@ -2005,7 +2086,18 @@ Proof.
       unfold stequiv. intros. apply update_same.
       reflexivity. assumption.
     Case "<-".
-      (* FILL IN HERE *) Admitted.
+    inversion H; subst; clear H; inversion H0; subst.
+    apply E_equiv with st.
+    apply E_Skip.
+    apply stequiv_trans with (update st X (aeval st (AId X))).
+    intros i. unfold update.
+    
+    destruct (beq_id X i) eqn: idEq; (* このように書くことで、destructした時の場合にラベルを貼ることができる *)
+    [ rewrite (beq_id_eq X i (eq_sym idEq)) | ];
+    reflexivity.
+    
+    simpl.
+    assumption.
 (** [] *)
 
 (* On the whole, this explicit equivalence approach is considerably
@@ -2085,6 +2177,25 @@ Theorem swap_noninterfering_assignments: forall l1 l2 a1 a2,
     (l1 ::= a1; l2 ::= a2)
     (l2 ::= a2; l1 ::= a1).
 Proof.
+  intros l1 l2 a1 a2 NE NU12 NU21 st st'.
+
+  assert (forall k1 k2 x1 x2,
+    k1 <> k2 ->
+    update (update st k1 x1) k2 x2 =
+    update (update st k2 x2) k1 x1).
+    intros.
+    apply functional_extensionality;
+    intro x;
+    apply update_permute;
+    apply not_eq_beq_id_false; assumption.
+
+  split.
+
+  intro.
+
+(* めっちゃ長い… *)
+Abort.
+
 (* Hint: You'll need [functional_extensionality] *)
 (* ヒント: [functional_extensionality]を必要とするでしょう。 *)
 (* FILL IN HERE *) Admitted.

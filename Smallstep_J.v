@@ -336,7 +336,7 @@ Proof.
     になります。(次の証明を完成させなさい): *)
 (* (訳注: 他のところと比べて、明示的な練習問題としての指示がなかったので、
    意を汲んで追記しました。) *)
-    
+
 
 Example test_step_2 :
       tm_plus
@@ -403,12 +403,12 @@ Proof.
       - 一方が [ST_PlusConstConst] で、他方が [ST_Plus1] または [ST_Plus2]
         であることはあり得ない。なぜなら、そうなるためには、
         [x] が [tm_plus t1 t2] の形で([ST_PlusConstConst]より)
-        [t1]と[t2]が両者とも定数であり、かつ[t1]または[t2]が [tm_plus ...] 
+        [t1]と[t2]が両者とも定数であり、かつ[t1]または[t2]が [tm_plus ...]
         の形でなければならない。
 
       - 同様に、一方が [ST_Plus1] で他方が [ST_Plus2] であることもあり得ない。
         なぜなら、そのためには、[x] は [tm_plus t1 t2] の形で、
-        [t1] が [tm_plus t1 t2] の形でも [tm_const n] 
+        [t1] が [tm_plus t1 t2] の形でも [tm_const n]
         の形でもなければならないからである。[] *)
 
 Theorem step_deterministic:
@@ -588,7 +588,7 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
     - 一方が [ST_PlusConstConst] で、他方が [ST_Plus1] または [ST_Plus2]
       であることはあり得ない。なぜなら、そうなるためには、
       [x] が [tm_plus t1 t2] の形で([ST_PlusConstConst]より)
-      [t1]と[t2]が両者とも定数であり、かつ[t1]または[t2]が [tm_plus ...] 
+      [t1]と[t2]が両者とも定数であり、かつ[t1]または[t2]が [tm_plus ...]
       の形でなければならない。
 
     - 同様に、一方が [ST_Plus1] で他方が [ST_Plus2] であることもあり得ない。
@@ -1129,7 +1129,7 @@ End Temp4.
     この機械を使って、プログラムを完全に簡約してみるのもおもしろいでしょう。
     つまり、その最後の結果がどうなるかを調べることです。
     これは以下のように形式化できます:
-  
+
     - 最初に、「マルチステップ簡約関係」(_multi-step reduction relation_)
       [==>*] を定義します。
       この関係は、[t]から1ステップ簡約を何らかの回数回行うことで[t']に到達できるとき、
@@ -1147,6 +1147,9 @@ End Temp4.
 (** マルチステップ簡約(_multi-step reduction_)関係 [==>*] は1ステップ関係
     [==>]の反射推移閉包です。*)
 
+(* @saka_bar : 関係Rの反射推移閉包とは、Rを含み反射性と推移性の両者を満たす最小の関係のことです。 in Rel_J.v *)
+(* @saka_bar : 推移閉包とは : 集合 X における二項関係 R に対して、R を含む X 上の最小の推移関係を意味する。例えば、X が人間（生死を問わない）の集合、R が親子関係としたとき、R の推移閉包とは「x は y の先祖である」という関係である。 wikipedia *)
+
 Definition stepmany := refl_step_closure step.
 
 Notation " t '==>*' t' " := (stepmany t t') (at level 40).
@@ -1161,11 +1164,15 @@ Lemma test_stepmany_1:
    ==>*
       tm_const (plus (plus 0 3) (plus 2 4)).
 Proof.
+  (* @saka_bar: apply rsc_step : 推移性を利用して変形 *)
+  (* @saka_bar: with で途中のyを明示的に指定 *)
   apply rsc_step with
-            (tm_plus
+            (y := (tm_plus
                 (tm_const (plus 0 3))
-                (tm_plus (tm_const 2) (tm_const 4))).
+                (tm_plus (tm_const 2) (tm_const 4)))).
+  (* @saka_bar: スモールステップに関する証明、今までやった(はず) *)
   apply ST_Plus1. apply ST_PlusConstConst.
+  (* @saka_bar: 上と同様に、apply rsc_step *)
   apply rsc_step with
             (tm_plus
                 (tm_const (plus 0 3))
@@ -1198,7 +1205,9 @@ Proof.
 Lemma test_stepmany_2:
   tm_const 3 ==>* tm_const 3.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* @saka_bar: stepmanyの定義より、stepmanyは反射律を満たす。よって、rsc_reflで一発。 *)
+  apply rsc_refl.
+Qed.
 (** [] *)
 
 (* **** Exercise: 1 star (test_stepmany_3) *)
@@ -1208,7 +1217,9 @@ Lemma test_stepmany_3:
    ==>*
       tm_plus (tm_const 0) (tm_const 3).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* @saka_bar: 同様。あまりにあっけなくて、問題の主旨を間違えていないか心配 *)
+  apply rsc_refl.
+Qed.
 (** [] *)
 
 (* **** Exercise: 2 stars (test_stepmany_4) *)
@@ -1224,7 +1235,27 @@ Lemma test_stepmany_4:
         (tm_const 0)
         (tm_const (plus 2 (plus 0 3))).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  eapply rsc_step.
+  eapply ST_Plus2. (* @saka_bar: tm_plusの2番目の項を簡約 *)
+  apply v_const.
+
+  apply ST_Plus2. (* @saka_bar: tm_plusの2番目の項を簡約 *)
+  apply v_const.
+
+  apply ST_PlusConstConst. (* @saka_bar: 証明したい式の左辺がtm_plus (const ) (const ) の形式になっている *)
+
+  (* 2つのtmが異なるので、rsc_reflは使えない。rsc_stepを使う *)
+  eapply rsc_step.
+  apply ST_Plus2. (* @saka_bar: tm_plusの2番目の項を簡約 *)
+  apply v_const.
+
+  simpl.
+  apply ST_PlusConstConst. (* @saka_bar: tm_plus (tm_const ) (tm_const ) の形 *)
+
+  simpl.
+  (* @saka_bar : (tm_plus (tm_const 0) (tm_const 5)) が両方に現れているため、rsc_reflが使える形 *)
+  apply rsc_refl.
+Qed.
 (** [] *)
 
 (* ########################################################### *)
@@ -1255,7 +1286,7 @@ Definition normal_form_of (t t' : tm) :=
     [normal_form t t'] を、
     (「[t']は[t]の正規形である」と読む以外に)
     「[t]の正規形は[t']である」と読んでよいということです。
-    (訳注：原文では "_the_ normal form of [t]" 
+    (訳注：原文では "_the_ normal form of [t]"
     と定冠詞を使ってよいことと記述されています。) *)
 
 (* **** Exercise: 3 stars, optional (test_stepmany_3) *)
@@ -1267,6 +1298,9 @@ Proof.
   destruct P1 as [P11 P12]. destruct P2 as [P21 P22].
   generalize dependent y2.
   (* We recommend using this initial setup as-is! *)
+  (* @saka_bar: この最初の設定、つまり、Proof. から今までのタクティック? をそのまま使うのがオススメらしい *)
+  (* @saka_bar: 数学での証明だと、背理法を使いたくなるところだけど… *)
+  (* @saka_bar: うーん、解けない *)
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
@@ -1318,7 +1352,15 @@ Lemma stepmany_congr_2 : forall t1 t2 t2',
      t2 ==>* t2' ->
      tm_plus t1 t2 ==>* tm_plus t1 t2'.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* @saka_bar: stepmany_congr_1 と同様です。  *)
+  intros t1 t2 t2' H1 H2.
+  rsc_cases (induction H2) Case.
+  Case "rsc_refl". apply rsc_refl.
+  Case "rsc_step". apply rsc_step with (tm_plus t1 y).
+        apply ST_Plus2. apply H1.
+        apply H.
+        apply IHrefl_step_closure.
+  Qed.
 (** [] *)
 
 (* _Theorem_: The [step] function is normalizing -- i.e., for every
@@ -1361,7 +1403,7 @@ Proof.
       ([nf_same_as_value]より)正規形は値であったから、
       ある [n1]、[n2]について、[t1' = tm_const n1] かつ [t2' = tm_const n2]
       である。[t1]と[t2]についての [==>*] 導出を組合せると、
-      [tm_plus t1 t2] が幾つかのステップで [tm_const (plus n1 n2)] 
+      [tm_plus t1 t2] が幾つかのステップで [tm_const (plus n1 n2)]
       に簡約されることを証明できる。
 
       [t' = tm_const (plus n1 n2)] が値であることは明らかなので、これは正規形である。*)
@@ -1474,7 +1516,7 @@ Proof.
 (* Bringing it all together, we can crisply say that the [v] is the
     normal form of [t] iff [t] evaluates to [v]. *)
 (** 全部まとめることで、[v]が[t]の正規形であるのは、[t]が[v]に評価されるのと同値である、
-    とはっきりと言うことができます。*)    
+    とはっきりと言うことができます。*)
 
 Corollary stepmany_iff_eval : forall t v,
   normal_form_of t v <-> t || v.

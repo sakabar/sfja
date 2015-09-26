@@ -24,7 +24,7 @@
    彼の完全版(残念ながら、我々の修飾付きプログラムの古いバージョンをベースにしている)は
    以下のファイルにある。
    /underconstruction/PilkiewiczFormalizedDecorated.v *)
-   
+
 Require Export ImpList_J.
 
 (* We've begun applying the mathematical tools developed in the
@@ -84,7 +84,7 @@ Require Export ImpList_J.
     - Imp の抽象構文木(_abstract syntax trees_)の型を定義しました。
       また、操作的意味論(_operational semantics_)を与える評価関係
       (_evaluation relation_、状態間の部分関数)も定義しました。
-      
+
       定義した言語は小さいですが、
       C, C++, Java などの本格的な言語の主要な機能を持っています。
       その中には変更可能な状態や、いくつかのよく知られた制御構造も含まれます。
@@ -192,31 +192,35 @@ Definition Assertion := state -> Prop.
       fun st =>  asnat (st X) = x
       fun st =>  asnat (st X) <= asnat (st Y)
       fun st =>  asnat (st X) = 3 \/ asnat (st X) <= asnat (st Y)
-      fun st =>  (asnat (st Z)) * (asnat (st Z)) <= x 
+      fun st =>  (asnat (st Z)) * (asnat (st Z)) <= x
                  /\ ~ (((S (asnat (st Z))) * (S (asnat (st Z)))) <= x)
       fun st =>  True
       fun st =>  False
 ]]
 [] *)
 
-(*
-      【註】後で、「この書き方は冗長」という話につなげるために、あえて冗長な日本語で書きます。
+(* *)
+(** 【解答】
 
       fun st =>  asnat (st X) = 3
-        ある状態stにおいて、変数Xの値を数値として解釈すると3である
+
+        ある状態stにおいて、変数Xの値を自然数として解釈すると3である
 
       fun st =>  asnat (st X) = x
-        ある状態stにおいて、変数Xの値を数値として解釈するとxである(?)
+
+        ある状態stにおいて、変数Xの値を自然数として解釈するとxである(?)
 
       fun st =>  asnat (st X) <= asnat (st Y)
-        ある状態stにおいて、変数Xの値を数値として解釈した値は、変数Yの値を数値として解釈した値以下である
+
+        ある状態stにおいて、変数Xの値を自然数として解釈した値は、変数Yの値を自然数として解釈した値以下である
 
       fun st =>  asnat (st X) = 3 \/ asnat (st X) <= asnat (st Y)
-        ある状態stにおいて、変数Xの値を数値として解釈すると3である、または、変数Xの値を数値として解釈した値は、変数Yの値を数値として解釈した値以下である
+
+        ある状態stにおいて、変数Xの値を自然数として解釈すると3である、または、変数Xの値を自然数として解釈した値は、変数Yの値を自然数として解釈した値以下である
 
       fun st =>  (asnat (st Z)) * (asnat (st Z)) <= x
                  /\ ~ (((S (asnat (st Z))) * (S (asnat (st Z)))) <= x)
-        TODO
+        ある状態stにおいて、(変数Zの値を自然数として解釈した値)と(変数Zの値を自然数として解釈した値)をかけ算した値がx以下、かつ、「(変数Zの値を自然数として解釈した値の後者)と(変数Zの値を自然数として解釈した値の後者)をかけ算した値はx以下、ではない」
 
       fun st =>  True
         ある状態stにおいて、真である(?)
@@ -264,12 +268,12 @@ Definition Assertion := state -> Prop.
 *)
 (** 非形式的には、次のように書くかわりに
 [[
-      fun st =>  (asnat (st Z)) * (asnat (st Z)) <= x 
+      fun st =>  (asnat (st Z)) * (asnat (st Z)) <= x
                  /\ ~ ((S (asnat (st Z))) * (S (asnat (st Z))) <= x)
 ]]
     次のように書きます。
 [[
-         Z * Z <= x 
+         Z * Z <= x
       /\ ~((S Z) * (S Z) <= x).
 ]]
 *)
@@ -391,7 +395,9 @@ Open Scope hoare_spec_scope.
  *)
 (** [] *)
 
-(*
+(* *)
+(** 【解答】
+
       【註】ホーアの三つ組の定義 “もしcが表明Pを満たす状態から開始され、また、cがいつかは停止するならば、最終状態では、表明Qが成立することを保証する。” に基づく
 
       {{True}} c {{X = 5}}
@@ -409,7 +415,7 @@ Open Scope hoare_spec_scope.
       {{X = x}}
       c
       {{Y = real_fact x}}.
-        もしcが表明(X = x)を満たす状態から開始され、またcがいつかは停止するならば、最終状態では、表明Yはxの階乗であるが保証される
+        もしcが表明(X = x)を満たす状態から開始され、またcがいつかは停止するならば、最終状態では、表明Yはxの階乗であることが保証される
 
       {{True}}
       c
@@ -472,6 +478,51 @@ Open Scope hoare_spec_scope.
       {{X = 100}}
 ]]
 *)
+(* *)
+(** 【解答】
+
+      {{True}} X ::= 5 {{X = 5}}
+
+        正しい
+
+      {{X = 2}} X ::= X + 1 {{X = 3}}
+
+        正しい
+
+      {{True}} X ::= 5; Y ::= 0 {{X = 5}}
+
+        正しい
+
+      {{X = 2 /\ X = 3}} X ::= 5 {{X = 0}}
+
+        正しい (前提が偽であるため)
+
+      {{True}} SKIP {{False}}
+
+        正しくない
+
+      {{False}} SKIP {{True}}
+
+        正しい
+
+      {{True}} WHILE True DO SKIP END {{False}}
+
+         正しい(停止しないため)
+
+      {{X = 0}}
+      WHILE X == 0 DO X ::= X + 1 END
+      {{X = 1}}
+
+        正しい
+
+      {{X = 1}}
+      WHILE X <> 0 DO X ::= X + 1 END
+      {{X = 100}}
+
+        正しい(停止しない)
+
+*)
+
 (* (Note that we're using informal mathematical notations for
    expressions inside of commands, for readability.  We'll continue
    doing so throughout the chapter.) *)
@@ -535,9 +586,9 @@ Proof.
 ]]
     はあまり興味深いものではありません。これは完全に正しいものですが、
     何も有用なことを伝えてくれません。事前条件がどのような状態でも満たされないことから、
-    コマンド [X ::= Y + 1] によって事後条件 [X <= 5] 
+    コマンド [X ::= Y + 1] によって事後条件 [X <= 5]
     に至るどのような状況も記述していません。
- 
+
     一方、
 [[
       {{ Y <= 4 /\ Z = 0 }}  X ::= Y + 1 {{ X <= 5 }}
@@ -560,12 +611,12 @@ Proof.
     - whenever [P'] is an assertion such that [{{P'}} c {{Q}}], we
       have [P' st] implies [P st] for all states [st].  *)
 (** 一般に、次が成立するとき"[P]は[Q]に対する[c]の最弱事前条件である"と言います:
-   
+
     - [{{P}} c {{Q}}], かつ
 
-    - [P'] が [{{P'}} c {{Q}}] を満たす表明ならば, 
+    - [P'] が [{{P'}} c {{Q}}] を満たす表明ならば,
       すべての状態 [st] について、[P' st] ならば [P st] となる。  *)
-   
+
 (* That is, [P] is the weakest precondition of [c] for [Q]
     if (a) [P] _is_ a precondition for [Q] and [c], and (b) [P] is the
     _weakest_ (easiest to satisfy) assertion that guarantees [Q] after
@@ -621,6 +672,27 @@ Proof.
 ]]
 *)
 (** [] *)
+
+(* *)
+(** 【解答】
+     {{ X = 5 }}  SKIP  {{ X = 5 }}
+
+     {{ Y + Z = 5 }}  X ::= Y + Z {{ X = 5 }}
+
+     {{ True }}  X ::= Y  {{ X = Y }}
+
+     {{ (X = 0 /\ Z = 4) \/ (X <> 0 /\ W = 3) }}
+     IFB X == 0 THEN Y ::= Z + 1 ELSE Y ::= W + 2 FI
+     {{ Y = 5 }}
+
+     {{ False }}
+     X ::= 5
+     {{ X = 0 }}
+
+     {{ True }}
+     WHILE True DO X ::= 0 END
+     {{ X = 0 }}
+*)
 
 (* ####################################################### *)
 (* ** Proof Rules *)
@@ -823,6 +895,7 @@ Proof.
   unfold hoare_triple.
   intros Q V a st st' HE HQ.
   inversion HE. subst.
+(* subst: 仮定に "H : X = Y" という命題があれば他の仮定とサブゴール内に現れるすべての X を Y に書き換えていきます。書き換えた後は H はもう必要ないので、自動で仮定から消してくれます。*)
   unfold assn_sub in HQ. assumption.  Qed.
 
 (* Here's a first formal proof using this rule. *)
@@ -895,6 +968,28 @@ Proof.
    ...を、形式的記述に直し、[hoare_asgn_eq]を使って証明しなさい。*)
 
 (* FILL IN HERE *)
+(** 【解答】 *)
+Theorem hoare_asgn_examples1:
+  {{fun st => asnat (st X) + 1 <= 5}}
+  (X ::= (APlus (AId X) (ANum 1)))
+  {{fun st => asnat (st X) <= 5}}.
+Proof.
+  apply hoare_asgn_eq.
+  (* unfold assn_sub. *)
+  (* simpl. *)
+  reflexivity.
+Qed.
+
+Theorem hoare_asgn_examples2:
+  {{ fun st => 0 <= 3 /\ 3 <= 5 }}
+    (X ::= (ANum 3))
+  {{ fun st => 0 <= asnat (st X) /\ asnat (st X) <= 5 }}.
+Proof.
+  apply hoare_asgn_eq.
+  (* unfold assn_sub. *)
+  (* simpl. *)
+  reflexivity.
+Qed.
 (** [] *)
 
 (* **** Exercise: 3 stars (hoarestate2) *)
@@ -920,6 +1015,34 @@ Proof.
 
     (* FILL IN HERE *)
 *)
+(* *)
+(** 【解答】
+
+  Qはどこに行った?
+
+  性質Qに関することが証明できない
+
+aにXが含まれる時におかしくなる
+X ::= X + 1
+*)
+
+Theorem hoare_asgn_bad : forall (X:id) (a:aexp),
+  {{fun st => True}}
+  (X ::= a)
+  {{fun st => asnat (st X) = asnat (aeval st a)}}.
+Proof.
+  intros X a.
+  apply hoare_asgn_eq.
+  unfold assn_sub.
+
+(* 証明しようとして断念した形跡がある… *)
+
+  (* unfold hoare_triple. *)
+  (* intros. *)
+  (* inversion H. *)
+  (* simpl. *)
+  (* apply f_equal. *)
+Abort.
 (** [] *)
 
 (* **** Exercise: 3 stars, optional (hoare_asgn_weakest) *)
@@ -932,7 +1055,16 @@ Theorem hoare_asgn_weakest : forall P V a Q,
   {{P}} (V ::= a) {{Q}} ->
   forall st, P st -> assn_sub V a Q st.
 Proof.
-(* FILL IN HERE *) Admitted.
+  unfold hoare_triple.
+  intros P V a Q H0 st H1.
+  unfold assn_sub.
+  apply H0 with (st := st).
+  Check E_Asgn.
+  apply E_Asgn.
+  reflexivity.
+  exact H1.
+Qed.
+(* FILL IN HERE *)
 (** [] *)
 
 
@@ -1003,7 +1135,7 @@ Proof.
 [[
       {{True}} X ::= 3 {{X = 3}}.
 ]]
-    はそうではないのです。この三つ組も正しいのですが、[hoare_asgn] 
+    はそうではないのです。この三つ組も正しいのですが、[hoare_asgn]
     (または [hoare_asgn_eq]) のインスタンスではないのです。
     なぜなら、[True] と [3 = 3] は、構文的に等しい表明ではないからです。
 
@@ -1110,9 +1242,9 @@ Proof.
 (** ここで、良い機会ですので、Coq の別の便利な機能を紹介しておきましょう。
     上述の例で明示的に[P']を書かなければならないことは、少々やっかいです。
     なぜなら、すぐ次にやること、つまり[hoare_asgn]規則を適用すること、が、
-    まさに、それがどうでなければならないかを決定することだからです。    
+    まさに、それがどうでなければならないかを決定することだからです。
     こういう場合、[apply]の代わりに[eapply]を使うことができます。
-    そうすることは、本質的に、「抜けている部分は後で埋めます」と 
+    そうすることは、本質的に、「抜けている部分は後で埋めます」と
     Coq に伝えることになります。*)
 
 Example hoare_asgn_example1' :
@@ -1204,6 +1336,18 @@ Proof.
   apply (H1 st'0 st'); try assumption.
   apply (H2 st st'0); try assumption. Qed.
 
+Theorem hoare_seq' : forall P Q R c1 c2,
+     {{Q}} c2 {{R}} ->
+     {{P}} c1 {{Q}} ->
+     {{P}} c1;c2 {{R}}.
+Proof.
+  intros P Q R c1 c2 H1 H2 st st' H12 Pre.
+  inversion H12; subst.
+  eapply H1. eassumption.
+  eapply H2. eassumption.
+  assumption.
+Qed.
+
 (* Note that, in the formal rule [hoare_seq], the premises are
     given in "backwards" order ([c2] before [c1]).  This matches the
     natural flow of information in many of the situations where we'll
@@ -1270,12 +1414,30 @@ Proof.
                    {{ X = 1 /\ Y = 2 }}
 ]]
 *)
-
+(* *)
+(** 【解答】 *)
 Example hoare_asgn_example4 :
   {{fun st => True}} (X ::= (ANum 1); Y ::= (ANum 2))
   {{fun st => asnat (st X) = 1 /\ asnat (st Y) = 2}}.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply hoare_seq with (Q := fun st => asnat (st X) = 1 /\ 2 = 2).
+  apply hoare_asgn_eq.
+  (* unfold assn_sub. *)
+  reflexivity.
+
+  apply hoare_consequence_post with (Q' := fun st => asnat (st X) = 1).
+  apply hoare_consequence_pre with (P' := fun st => 1 = 1).
+  apply hoare_asgn_eq.
+  reflexivity.
+
+  intros.
+  reflexivity.
+
+  intros.
+  rewrite H.
+  split; reflexivity.
+Qed.
+  (* FILL IN HERE *)
 (** [] *)
 
 (* **** Exercise: 3 stars, optional (swap_exercise) *)
@@ -1293,7 +1455,26 @@ Proof.
       {{X <= Y}} c {{Y <= X}}
 ]]
 *)
+(** 【解答】 *)
+Theorem swap_exercise:
+  {{fun st => asnat (st X) <= asnat (st Y)}}
+  (Z ::= (AId X); X ::= (AId Y); Y ::= (AId Z))
+  {{fun st => asnat (st Y) <= asnat (st X)}}.
+Proof.
+  eapply hoare_seq.
+  apply hoare_seq with (Q := fun st => asnat (st Z) <= asnat (st X)).
+  apply hoare_asgn_eq.
+  unfold assn_sub.
+  reflexivity.
 
+  apply hoare_asgn_eq.
+  unfold assn_sub.
+  reflexivity.
+
+  apply hoare_asgn_eq.
+  (* unfold assn_sub. *)
+  reflexivity.
+Qed.
 (* FILL IN HERE *)
 (** [] *)
 
@@ -1313,8 +1494,24 @@ Proof.
          {{fun st => asnat (st Y) = n}}.
 ]]
 *)
-
 (* FILL IN HERE *)
+(** 【解答】*)
+Goal forall (a : aexp) (n : nat),
+  {{fun st => asnat (aeval st a) = n}}
+  (X ::= (ANum 3); Y ::= a)
+  {{fun st => asnat (st Y) = n}}.
+Proof.
+  intros a n.
+  eapply hoare_seq.
+  apply hoare_asgn_eq.
+  reflexivity.
+
+  apply hoare_asgn_eq.
+  unfold assn_sub.
+  simpl.
+  (* reflexivity. (* 失敗する *) *)
+Abort.
+(** メモリが異なっているから? *)
 (** [] *)
 
 (* ####################################################### *)
@@ -1638,7 +1835,7 @@ Proof.
     apply hoare_post_true. intros st. apply I.
   Case "Loop invariant and negated guard imply postcondition".
     simpl. intros st [Hinv Hguard].
-    apply ex_falso_quodlibet. apply Hguard. reflexivity.
+    apply ex_falso_quodlibet. apply Hguard. unfold bassn. reflexivity.
   Case "Precondition implies invariant".
     intros st H. constructor.  Qed.
 
@@ -1662,6 +1859,7 @@ Theorem always_loop_hoare' : forall P Q,
 Proof.
   unfold hoare_triple. intros P Q st st' contra.
   apply loop_never_stops in contra.  inversion contra.
+
 Qed.
 
 (* Hoare rules that only talk about terminating commands are often
@@ -1769,6 +1967,15 @@ Inductive ceval : state -> com -> state -> Prop :=
       ceval st' (WHILE b1 DO c1 END) st'' ->
       ceval st (WHILE b1 DO c1 END) st''
 (* FILL IN HERE *)
+  | E_RepeatEnd : forall st st' b1 c1,
+      ceval st c1 st' ->     (* 初期状態stでコマンドc1を実行するとst'になる *)
+      beval st' b1 = true -> (* コマンド実行後、停止条件が真のとき *)
+      ceval st (REPEAT c1 UNTIL b1 END) st' (* stで(REPEAT c1 UNTIL b1 END)を実行すると、st'になる *)
+  | E_RepeatLoop : forall st st' st'' b1 c1,
+      ceval st c1 st' -> (* 初期状態stでコマンドc1を実行するとst'になる *)
+      beval st' b1 = false -> (* コマンド実行後、停止条件が偽のとき *)
+      ceval st' (REPEAT c1 UNTIL b1 END) st'' -> (* コマンド実行後、もう一度ループした結果がst''になる *)
+      ceval st (REPEAT c1 UNTIL b1 END) st''
 .
 
 Tactic Notation "ceval_cases" tactic(first) ident(c) :=
@@ -1777,6 +1984,7 @@ Tactic Notation "ceval_cases" tactic(first) ident(c) :=
   | Case_aux c "E_IfTrue" | Case_aux c "E_IfFalse"
   | Case_aux c "E_WhileEnd" | Case_aux c "E_WhileLoop"
 (* FILL IN HERE *)
+  | Case_aux c "E_RepeatEnd" | Case_aux c "E_RepeatLoop"
 ].
 
 (* A couple of definitions from above, copied here so they use the
@@ -1796,6 +2004,55 @@ Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q) (at level 90, c at next l
 (** [repeat]コマンドの適切な証明規則を表現する定理[hoare_repeat]を述べ、証明しなさい。
     このときに[hoare_while]をモデルとして利用しなさい。*)
 
+Lemma hoare_repeat : forall (P Q:state -> Prop) c b,
+(* これは0回実行で止まる場合の'until' *)
+  (* {{fun st => P st /\ ~ (bassn b st)}} c {{P}} -> *)
+  (* {{P}} REPEAT c UNTIL b END {{fun st => P st /\ (bassn b st)}}. *)
+  ({{P}} c {{P}}) ->
+  {{P}} REPEAT c UNTIL b END {{fun st => P st /\ (bassn b st)}}.
+Proof.
+(* ループが終わる場合と、ループが続く場合で場合分け *)
+(* ループが続く場合は *)
+(* (P c P /\ ~b) /\ (P /\ ~b c P) *)
+(* これは、強さの関係から、 *)
+(* (P c P /\ ~b) *)
+
+(* と同じ *)
+
+
+
+  Abort.
+(*   intros P c b He. *)
+(*   remember (REPEAT c UNTIL b END) as rcom. *)
+(*   unfold hoare_triple. *)
+(*   intros st st' Hrcom HP. *)
+(*   ceval_cases (induction Hrcom) Case; try (inversion Heqrcom); subst. *)
+(*   Case "E_RepeatEnd". *)
+(*   apply IHHrcom. *)
+(*   rewrite Heqrcom. *)
+
+
+(*   split. *)
+(*     apply Hrecom. *)
+
+(*     apply IHHrcom. *)
+
+(* Hhoare. *)
+(*   unfold hoare_triple. *)
+(*   intros st st' He HP. *)
+
+(*   ceval_cases (induction He) Case; try (inversion Heqrcom); subst. *)
+(*   split. *)
+(*   Case "E_RpeatEnd". *)
+
+(*   {{P}} c {{P}} -> *)
+(*   {{P}} REPEAT c UNTIL b END {{fun st => P st /\ bassn b st}}. *)
+(* Proof. *)
+(*   intros P c b H. *)
+
+(*   induction rcom. *)
+
+
 (* FILL IN HERE *)
 
 End RepeatExercise.
@@ -1807,7 +2064,7 @@ End RepeatExercise.
 
 (* The whole point of Hoare Logic is that it is compositional -- the
     structure of proofs exactly follows the structure of programs.
-    This fact suggests that we we could record the essential ideas of
+    This fact sggests that we we could record the essential ideas of
     a proof informally (leaving out some low-level calculational
     details) by decorating programs with appropriate assertions around
     each statement.  Such a _decorated program_ carries with it
@@ -2183,7 +2440,30 @@ Theorem reduce_to_zero_correct :
   reduce_to_zero
   {{fun st => asnat (st X) = 0}}.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold reduce_to_zero.
+  eapply hoare_consequence_post.
+
+  apply hoare_while.
+  eapply hoare_consequence_pre.
+  apply hoare_asgn.
+
+  intros st H0.
+  unfold assn_sub.
+  apply I.
+
+  unfold bassn.
+  intros st H0.
+  simpl in H0.
+  unfold beval, not in H0.
+  unfold negb in H0.
+  remember (asnat (st X)) as Q. destruct Q.
+  reflexivity.
+  simpl in H0.
+  destruct H0.
+  exfalso.
+  apply H0.
+  reflexivity.
+Qed.
 (** [] *)
 
 (* ####################################################### *)
@@ -2221,6 +2501,33 @@ Definition add_slowly : com :=
 (** Coq の [Hoare_triple]のように、[add_slowly]の仕様を形式的に記述しなさい。
     そして正しさを証明しなさい。*)
 
+Definition add_slowly_invariant x z :=
+  fun st => plus (asnat (st Z)) (asnat (st X)) = plus x z.
+
+Theorem add_slowly_correct : forall x z,
+  {{fun st => asnat (st X) = x /\ asnat (st Z) = z}}
+  add_slowly
+  {{fun st => asnat (st Z) = plus z x}}.
+Proof.
+  intros x z.
+  unfold add_slowly.
+  eapply hoare_consequence_pre.
+  eapply hoare_consequence_post.
+  apply hoare_while with (P := fun st => asnat (st Z) + asnat (st X) = z + x).
+  eapply hoare_consequence_pre.
+  eapply hoare_seq.
+  apply hoare_asgn.
+  apply hoare_asgn.
+
+  unfold assn_sub, bassn, update.
+  simpl.
+  intros st [invar GuardTrue].
+  remember (beq_nat (asnat (st X)) 0) as Q. destruct Q.
+  inversion GuardTrue.
+  symmetry in HeqQ. apply beq_nat_false in HeqQ.
+  omega.
+
+Abort.
 (* FILL IN HERE *)
 (** [] *)
 
@@ -2981,6 +3288,191 @@ Proof.
   intros. simpl. apply snoc_equation.
 Qed.
 
+Definition list_reverse_program : com :=
+  Y ::= ANil;
+  WHILE (BIsCons (AId X)) DO
+    Y ::= ACons (AHead (AId X)) (AId Y);
+    X ::= ATail (AId X)
+  END.
+
+Definition list_reverse_invariant l :=
+  fun st => (rev (aslist (st Y))) ++ (aslist (st X)) = l.
+
+Lemma snoc_assoc: forall(l0 l1:list nat)(n:nat),
+  (snoc l0 n) ++ l1 = l0 ++ (n :: l1).
+Proof.
+  intros l0 l1 n.
+  induction l0; try reflexivity; simpl.
+  rewrite IHl0.
+  reflexivity.
+Qed.
+
+(* Lemma rev_lemma: forall l0 l1:list nat, *)
+(*   rev l0 = l1 -> l0 = rev l1. *)
+(* Proof. *)
+(*   induction l0. *)
+(*   intros l1 H0. *)
+(*   simpl in H0. *)
+(*   rewrite <- H0. *)
+(*   reflexivity. *)
+
+(*   induction l1; try reflexivity; simpl. *)
+(*   intros F. *)
+(*   inversion F. *)
+(* Abort. *)
+
+Lemma rev_snoc: forall(a:nat)(l:list nat), rev (snoc l a) = a :: rev l.
+Proof.
+  intros a.
+  induction l; try reflexivity.
+  simpl.
+  rewrite IHl.
+  reflexivity.
+Qed.
+
+Lemma rev_rev: forall (l:list nat), rev (rev l) = l.
+Proof.
+  induction l; try reflexivity.
+  simpl.
+
+  rewrite rev_snoc.
+  rewrite IHl.
+  reflexivity.
+Qed.
+
+Theorem list_reverse_program_correct: forall l : list nat,
+  {{ fun st => st X = VList l /\ st Y = VList nil }}
+  list_reverse_program
+  {{ fun st => st Y = VList (rev l) }}.
+Proof.
+  intros l.
+  unfold list_reverse_program.
+  eapply hoare_seq.
+  eapply hoare_consequence_post.
+  apply hoare_while with (P:= list_reverse_invariant l).
+
+  eapply hoare_seq.
+  apply hoare_asgn.
+
+  eapply hoare_consequence_pre.
+  apply hoare_asgn.
+
+  unfold list_reverse_invariant, assn_sub, update, bassn.
+  intros st [H0 H1].
+  simpl.
+  remember (aslist (st X)) as xL.
+  remember (aslist (st Y)) as yL.
+  rewrite snoc_assoc.
+
+  assert ((head xL :: tail xL) = xL).
+    rewrite HeqxL.
+    simpl in H1.
+    case_eq (aslist (st X)).
+    intros HasL.
+    rewrite HasL in H1.
+    inversion H1.
+
+    intros.
+    reflexivity.
+
+    rewrite H.
+    assumption.
+
+    unfold list_reverse_invariant,bassn.
+    intros st [H0 H1].
+    case_eq (aslist (st X)).
+    simpl in H1.
+    intros Hxceq.
+    rewrite Hxceq in H1.
+    rewrite Hxceq in H0.
+    rewrite append_nil in H0.
+    remember (aslist (st Y)) as yL.
+    rewrite <- H0.
+
+    rewrite rev_rev.
+    rewrite HeqyL.
+    case_eq (st Y).
+    intros.
+    simpl.
+
+
+
+    case_eq (aslist (st Y)).
+    intro Hyceq.
+    unfold aslist in Hyceq.
+    case_eq (st Y).
+Abort.
+(*     intros n H2. *)
+(*     rewrite H2 in Hyceq. *)
+
+(*     discriminate. *)
+
+
+(*     simpl. *)
+(* Print VList. *)
+(* Check (st Y). *)
+(*     simpl. *)
+
+(* simpl. *)
+
+(*   simpl. *)
+(*   eapply hoare_consequence_pre. *)
+
+(*   unfold list_reverse_invariant. *)
+(*   unfold assn_sub, update, bassn; simpl. *)
+(*   intros st. *)
+(*   remember (aslist (st X)) as Q. *)
+(*   destruct Q; simpl. *)
+
+(*   intros [H0 H1]. *)
+(*   inversion H1. *)
+
+(*   remember (rev (aslist (st Y))) as Ylist. *)
+(*   intros [H0 H1]. *)
+
+(*   destruct Ylist; simpl. *)
+(*   assumption. *)
+(*   rewrite snoc_assoc. *)
+(*   assumption. *)
+
+(*   intros st. *)
+(*   unfold list_reverse_invariant, bassn. *)
+(*   intros [H0 H1]. *)
+(*   assert (aslist (st X) = nil). *)
+(*   simpl in H1. *)
+(*   remember (aslist (st X)) as Q. *)
+(*   destruct Q. *)
+(*   reflexivity. *)
+(*   exfalso. *)
+(*   apply H1. *)
+(*   reflexivity. *)
+(*   rewrite H in H0. *)
+(*   rewrite append_nil in H0. *)
+
+(*   destruct (BIsCons (AId X)). *)
+(*   simpl in H1. *)
+(*   exfalso. *)
+(*   apply H1. *)
+(*   reflexivity. *)
+(*   inversion H1. *)
+
+
+(*   intros [H0 H1]. *)
+
+
+(*   intros num l0 l1. *)
+
+(*   rewrite <- rev_equation in H0. *)
+(*   simpl. *)
+(*   assumption. *)
+
+(*   unfold list_reverse_invariant, bassn, update, not. *)
+(*   intros st [H0 H1]. *)
+(*   remember (aslist (st Y)) as Q. *)
+(*   destruct Q. *)
+(*   simpl in H0. *)
+
+
 (* FILL IN HERE *)
 (** [] *)
 
@@ -3457,6 +3949,90 @@ Qed.
 (** 対応する[dcom]型の値を返す関数を記述し、その正しさを証明しなさい。*)
 
 (* FILL IN HERE *)
+
+Definition slow_assignment_dec (x:nat) (y:nat) : dcom := (
+    {{fun st => True}}
+  X ::= (ANum x)
+    {{ fun st => asnat (st X) = x}};
+  Y ::= ANum 0
+    {{fun st => asnat (st X) = x /\ asnat (st Y) = 0}}
+    =>
+    {{ fun st => asnat (st X) + asnat (st Y) = x }}  ;
+  WHILE BNot (BEq (AId X) (ANum 0))
+  DO {{ fun st => asnat (st X) + asnat (st Y) = x /\ bassn (BNot (BEq (AId X) (ANum 0))) st}}
+  X ::= AMinus (AId X) (ANum 1)
+    {{ fun st => asnat (st Y) + asnat (st X) + 1 = x}};
+  Y ::= APlus (AId Y) (ANum 1)
+    {{ fun st => asnat (st Y) + asnat (st X) = x}}
+  END
+  {{ fun st => asnat (st X) + asnat (st Y) = x /\ bassn (BEq (AId X) (ANum 0)) st }} => {{ fun st => asnat (st Y) = x /\ bassn (BEq (AId X) (ANum 0)) st  }}
+) % dcom.
+
+Theorem slow_assignment_dec_correct : forall x y,
+  dec_correct (slow_assignment_dec x y ).
+Proof.
+  intros. verify.
+
+  unfold not in H0.
+  rewrite negb_true_iff in H0.
+  case_eq (beq_nat (asnat (st X)) 0); try reflexivity; try eauto.
+
+  unfold not.
+  rewrite H0; simpl.
+  intros.
+  inversion H1.
+
+  rewrite -> update_neq.
+  rewrite -> plus_comm.
+  case_eq (asnat (st X)).
+  intros Hceq.
+  rewrite Hceq in H0.
+  inversion H0.
+
+  intros.
+  rewrite plus_comm.
+  rewrite H1 in H.
+  simpl.
+  assert (forall n, n - 0 = n).
+    induction n0; try reflexivity.
+
+  rewrite H2.
+  assert (forall n, S n = n + 1).
+    induction n0; try reflexivity.
+    rewrite <- plus_n_Sm.
+    assert (forall n, n + 0 = n).
+      induction n1; try reflexivity.
+        rewrite plus_Sn_m.
+        rewrite IHn1.
+        reflexivity.
+  rewrite H3.
+  reflexivity.
+
+  rewrite <- plus_assoc.
+  rewrite <- H3 at 1.
+  rewrite H.
+  reflexivity.
+
+  unfold X.
+  unfold Y.
+  reflexivity.
+
+  rewrite -> update_neq.
+  rewrite plus_comm.
+  rewrite plus_assoc.
+  omega.
+
+  unfold X, Y. reflexivity.
+  case_eq (asnat (st X)).
+  intro Hceq.
+  rewrite Hceq in H.
+  simpl in H.
+  assumption.
+
+  intros n Hceq.
+  rewrite Hceq in H0.
+  inversion H0.
+Qed.
 (** [] *)
 
 (* **** Exercise: 4 stars, optional (factorial_dec)  *)
@@ -3608,5 +4184,3 @@ Proof.
        rewrite append_nil in H3. subst. apply H4. assumption.
        apply ex_falso_quodlibet. apply H1. reflexivity.
 Qed.
-
-

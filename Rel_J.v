@@ -1,6 +1,6 @@
 (** * Rel_J:関係の性質 *)
-   
-   
+
+
 (* $Date: 2011-03-21 10:44:46 -0400 (Mon, 21 Mar 2011) $ *)
 
 
@@ -18,7 +18,7 @@ Require Export Logic_J.
     関係からの別の関係の構成、などです。ここでちょっと立ち止まって、
     後で有用になるいくつかをふりかえってみましょう。 *)
 
-(** 集合[X]の「上の」関係は、[X]2つをパラメータとする命題です。-- 
+(** 集合[X]の「上の」関係は、[X]2つをパラメータとする命題です。--
     つまり、集合[X]の2つの要素に関する論理的主張です。*)
 
 Definition relation (X: Type) := X->X->Prop.
@@ -81,7 +81,7 @@ Proof.
 (** [] *)
 
 (** 集合[X]上の反射的(_reflexive_)関係とは、[X]のすべての要素について、成立する関係です。
-    (訳注: 集合[X]上の関係[R]が反射的とは、[X]の任意の要素 [x]について 
+    (訳注: 集合[X]上の関係[R]が反射的とは、[X]の任意の要素 [x]について
      [R x x]が成立することです。)    *)
 
 Definition reflexive {X: Type} (R: relation X) :=
@@ -165,7 +165,7 @@ Proof.
     定理: すべての[n]について、[~(S n <= n)]
 
     形式的な証明は後のoptionalな練習問題ですが、
-    ここでは、形式的な証明を行わずに、まず非形式的な証明を示しなさい。 
+    ここでは、形式的な証明を行わずに、まず非形式的な証明を示しなさい。
 
     証明:
     (* FILL IN HERE *)
@@ -176,6 +176,17 @@ Proof.
 Theorem le_Sn_n : forall n,
   ~ (S n <= n).
 Proof.
+  intros n H0.
+  induction n as [|n1].
+  inversion H0.
+
+  inversion H0.
+  apply IHn1.
+  rewrite H1.
+  apply le_reflexive.
+
+  apply IHn1.
+
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
